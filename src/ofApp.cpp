@@ -7,7 +7,7 @@ void ofApp::setup(){
     ofBackground(bgColor);
     ofSetFrameRate(frameRate);
     ofSetVerticalSync(true);    //Avoid tearing
-    ofEnableLighting();
+    //ofEnableLighting();
 
     game.setup();
     
@@ -55,16 +55,6 @@ void ofApp::draw(){
     ofDisableLighting();
     ofDisableDepthTest();
     
-    
-}
-
-void ofApp::keyPressed(int key){
-    game.keyPressed(key);
-
-}
-
-void ofApp::exit(){
-    game.exit();
     
 }
 

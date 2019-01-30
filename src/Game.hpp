@@ -65,10 +65,10 @@ class Game{
         void update();
         void draw();
         void drawGUI();
-        void keyPressed(int key);
+        void keyPressed(ofKeyEventArgs& eventArgs);
         void loadLevels();
         int getGameSize();
-        void exit();
+        void exit(ofEventArgs&);
         void audioOut(float * output, int bufferSize, int nChannels);
     
 };

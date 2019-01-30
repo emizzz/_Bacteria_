@@ -75,7 +75,6 @@ class Soundtrack{
         int currentCount;
     
         maxiMix mix;                            //stereo bus
-        double outputs[2];                      //the freq are mixed, assigned to this var and then assigned to the *output
     
         int currentToPlayColumnIndx;            //the current "sequencer" column index. If this is 0, the sequencer will play the 0th matrix's column, if this is 5, it will play the 5th, ...
         vector<Key> verticalKeyboard;           //all the keyboard's keys (n. keys == n. matrix's rows)

@@ -33,7 +33,7 @@
  -setup() => allows to initialize some OF settings, the game, the cam and the light
  -update() => allows to update the game
  -draw() => allows to draw the game with the cam and lights POV and the GUI with the standard 2d POV
- -keyPressed(), exit() and  audioOut => allows to pass some events to the game class
+ -audioOut => allows to pass the event to the game class
  
  --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--***/
 
@@ -46,15 +46,15 @@ class ofApp : public ofBaseApp{
         ofLight light;
 
         const int sampleRate = 44100;   // in Hz
-        const int bufferSize = 512;     //the size of the buffer, the number of floating-point values in the input array.
+        /* the size of the buffer, the number of floating-point values in the input array.
+         + buffersize = - calls to the audio hardware, but + delay
+        */
+        const int bufferSize = 512;
         const int frameRate = 60;       // fps
     
 	public:
 		void setup();
 		void update();
 		void draw();
-    
-        void exit();
         void audioOut(float * output, int bufferSize, int nChannels);
-		void keyPressed(int key);
 };

@@ -9,14 +9,16 @@ void GUI::setup(bool &_pause, bool &_music){
     
     pause = &_pause;
     music = &_music;
-    initScreenWidth = ofGetScreenWidth();
+    screenWidth = ofGetWindowWidth();
+    screenHeight = ofGetWindowHeight();
+    initScreenWidth = screenWidth;
     title = "-*- BACTERIA -*-";
     message = "";
     level = "";
     
     //the 2 bools are AntiAliased and FullCharacterSet
-    font.load("UbuntuMono-Regular.ttf", initScreenWidth/80, true, true);
-    ofxGuiSetFont("UbuntuMono-Regular.ttf", initScreenWidth/80);
+    font.load("UbuntuMono-Regular.ttf", initScreenWidth/70, true, true);
+    ofxGuiSetFont("UbuntuMono-Regular.ttf", initScreenWidth/70);
     
     rulesText = "Kill all the enemies. They reproduce with the following rules: \n\n"
     "a) Each alive cell with one or no neighbors dies, as if by solitude. \n"
@@ -36,9 +38,13 @@ void GUI::setup(bool &_pause, bool &_music){
     gui.setShape(0, 0, initScreenWidth, ofGetScreenHeight());
     gui.setBorderColor(ofColor(0, 0, 0));
     
-    gui.add(playButton.setup("Play", buttonWidth, buttonHeight));
-    gui.add(rulesButton.setup("Rules", buttonWidth, buttonHeight));
-    gui.add(musicButton.setup("Music", music, buttonWidth, buttonHeight));
+    playButton.setup("Play", buttonWidth, buttonHeight);
+    rulesButton.setup("Rules", buttonWidth, buttonHeight);
+    musicButton.setup("Music", music, buttonWidth, buttonHeight);
+    
+    gui.add(&playButton);
+    gui.add(&rulesButton);
+    gui.add(&musicButton);
     
     
     //Second GUI's page (rules)
@@ -47,34 +53,24 @@ void GUI::setup(bool &_pause, bool &_music){
     rulesPage.setShape(0, 0, initScreenWidth, ofGetScreenHeight());
     rulesPage.setBorderColor(ofColor(0, 0, 0));
     
-    rulesPage.add(backButton.setup("Back", buttonWidth, buttonHeight));
+    backButton.setup("Back", buttonWidth, buttonHeight);
+    rulesPage.add(&backButton);
     
-
-    //buttons listeners
+    //buttons listeners (fully qualify member function name needed)
     playButton.addListener(this, &GUI::buttonPressed);
     rulesButton.addListener(this, &GUI::buttonPressed);
     backButton.addListener(this, &GUI::buttonPressed);
     musicButton.addListener(this, &GUI::togglePressed);
     
+    buttonsPosition();
+    ofAddListener(ofEvents().windowResized, this, &GUI::windowResized);
+
     
 }
 void GUI::update(){
     gui.setPosition(0,0);           //workaround for deleting the drag option
     rulesPage.setPosition(0,0);     //workaround for deleting the drag option
-    
-    /*
-     if the user resizes the window, the gui adjusts its size according to the new size (I don't use the ofApp::windowResized because I should pass it throught the Game class)
-    */
-    if(ofGetWindowWidth() != screenWidth || ofGetWindowHeight() != screenHeight){
-        
-        screenWidth = ofGetWindowWidth();
-        screenHeight = ofGetWindowHeight();
-        gui.setSize(screenWidth-margin*2, screenHeight-margin*2);           //set size to the main page
-        rulesPage.setSize(screenWidth-margin*2, screenHeight-margin*2);     //set the size to the rules page
-        
-        buttonsPosition();
-        
-    }
+
 }
 void GUI::draw(){
     
@@ -86,9 +82,9 @@ void GUI::draw(){
 }
 
 //buttons listeners
-void GUI::buttonPressed(const void * sender){
+void GUI::buttonPressed(const void * sender){       // (const* => big object is not copied, but it can't be modified)
     ofParameter<void> * button = (ofParameter<void> *)sender;
-    string name = button->getName();        //it allows to use a single method for more buttons
+    string name = button->getName();                //it allows to use a single method for more buttons
     
     if(name == "Play"){
         *pause = false;
@@ -144,5 +140,14 @@ void GUI::setMessage(string _message){
 //it sets the game's level
 void GUI::setLevel(string _level){
     level = "Level " + _level;
+}
+
+void GUI::windowResized(ofResizeEventArgs & resize){
+    screenWidth = ofGetWindowWidth();
+    screenHeight = ofGetWindowHeight();
+    gui.setSize(screenWidth-margin*2, screenHeight-margin*2);           //set size to the main page
+    rulesPage.setSize(screenWidth-margin*2, screenHeight-margin*2);     //set the size to the rules page
+    
+    buttonsPosition();
 }
 

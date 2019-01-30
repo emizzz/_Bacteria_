@@ -5,7 +5,7 @@ void Soundtrack::setup(vector<vector<bool>> matrix){
     setMatrix(matrix);
 }
 
-//it sets the soundMatrix. If the level changes size, also the keyboard should change the number of keys.
+//it sets the soundMatrix. If the level changes size, also the keyboard should changes the number of keys.
 void Soundtrack::setMatrix(vector<vector<bool>> matrix){
     soundMatrix.clear();
     soundMatrix = matrix;
@@ -57,6 +57,7 @@ PLAY
 
 void Soundtrack::play(float *output, int bufferSize, int nChannels){
     for(int i = 0; i < bufferSize * nChannels; i += 2) {
+        double outputs[2];          //the freq are mixed, assigned to this var and then assigned to the *output
         double currentFrame = 0;
         
         /*
@@ -78,6 +79,7 @@ void Soundtrack::play(float *output, int bufferSize, int nChannels){
         for(int y=0; y<verticalKeyboard.size(); y++){
             currentFrame += verticalKeyboard[y].play()/verticalKeyboard.size();
         }
+        
         
         //mix the sound in a stereo mode
         mix.stereo(currentFrame, outputs, 0.5);                     //the parameters pointers are passed

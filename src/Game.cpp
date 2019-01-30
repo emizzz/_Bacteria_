@@ -19,7 +19,10 @@ void Game::setup(){
     
     nextLevel();                                //it calls environment.setup()
     
-    if(musicOn) soundtrack.setup(environment.getBoolLifeMatrix());
+    /*add an event listener
+     (the ofEvent that we want to listen to, pointer to the class that is going to be listening, pointer to the method that's going to be called)*/
+    ofAddListener(ofEvents().keyPressed, this, &Game::keyPressed);
+    ofAddListener(ofEvents().exit, this, &Game::exit);
     
 }
 
@@ -150,7 +153,10 @@ KEYPRESSED
     -PAUSE => p
  
  */
- void Game::keyPressed(int key){
+ void Game::keyPressed(ofKeyEventArgs& eventArgs){
+    
+    //debug
+    int key = eventArgs.key;
     
     if(!pause){
         if(angle % 90 == 0){                             //it doesn't allow to rotate several times in the same action
@@ -391,7 +397,7 @@ int Game::getGameSize(){
     return gameSize;
 }
 
-void Game::exit(){
+void Game::exit(ofEventArgs&){
     soundtrack.SoundtrackClose();                               //this avoids some errors closing the app
 }
 

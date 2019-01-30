@@ -35,9 +35,9 @@ class Environment{
         Rocket rocket = Rocket(ofPoint(0, 0, cellSize), cellSize);
     
         bool wallsCollision(ofPoint cell);
-        bool playerCollision(vector<vector<Cell>> &matrix, ofPoint cell);
-        void gameOfLifeEngine(vector<vector<Cell>> &matrix);
-        int countNeighbours(ofPoint _pos, string _mode="xy");
+        bool playerCollision(ofPoint cell);
+        void gameOfLifeEngine();
+        int countNeighbours(vector<vector<Cell>> &matrix, ofPoint _pos, string _mode="xy");
     
     public:
         void setup(vector<vector<Cell>> level);

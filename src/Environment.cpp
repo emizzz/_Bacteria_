@@ -28,8 +28,6 @@ UPDATE
         -the current rocket position to check for collisions
         -the last rocket position (before a collision) to transform the rocket into an enemy cell.
  
- The method uses a copy of the original lifeMatrix, because if we change directly values in the orginal matrix, the Game of Life algorithm doesn't work as expected.
-
  The flow is:
     1) updates lifeMatrix (if updateMatrix == true)
     2) checks for "player - walls" collisions
@@ -42,7 +40,6 @@ UPDATE
  
 */
 void Environment::update(bool updateMatrix){
-    vector<vector<Cell>> tempLifeMatrix = lifeMatrix;
     ofPoint prevRocketPos = rocket.getPos();                          //the rocket pos in the physical world
     ofPoint prevMapRocketPos = prevRocketPos/(cellSize*2);            //the rocket pos in the life matrix
     prevMapRocketPos.x = int(prevMapRocketPos.x);
@@ -52,7 +49,7 @@ void Environment::update(bool updateMatrix){
     
     //GAME OF LIFE engine
     if(updateMatrix){
-        gameOfLifeEngine(tempLifeMatrix);    //tempLifeMatrix passed by reference
+        gameOfLifeEngine();
     }
     
     /*
@@ -64,7 +61,7 @@ void Environment::update(bool updateMatrix){
     }
     
     //if the player collides with another cell, the player dies.
-    if(playerCollision(tempLifeMatrix, player.getPos())){
+    if(playerCollision(player.getPos())){ 
         player.kill();
     }
     
@@ -73,12 +70,15 @@ void Environment::update(bool updateMatrix){
     rocket.update(player.getPos(), player.getDirection());
     player.update();
     
+    
+    ofPoint newRocketPos = rocket.getPos();
+    ofPoint newMapRocketPos = newRocketPos/(cellSize*2);
 
     /*
      if the rocket collides with a wall, it dies, and borns a new cell in the last rocket's pos.
-     */
-    if(wallsCollision(rocket.getPos()) && rocket.isAlive() ){
-        tempLifeMatrix[prevMapRocketPos.x][prevMapRocketPos.y].giveBirth();
+    */
+    if(wallsCollision(newRocketPos) && rocket.isAlive() ){
+        lifeMatrix[prevMapRocketPos.x][prevMapRocketPos.y].giveBirth();
         rocket.kill();
     }
     
@@ -88,27 +88,24 @@ void Environment::update(bool updateMatrix){
      
      -rocket.getDirection()[0] == 1 => the rocket move in the x direction
      -rocket.getDirection()[0] == 0 => the rocket move in the y direction
-    */
+    */    
     string mode = abs(rocket.getDirection()[0]) == 1 ? "x" : "y";
-    if(countNeighbours(prevRocketPos, mode) > 0  && rocket.isAlive()){
-        tempLifeMatrix[prevMapRocketPos.x][prevMapRocketPos.y].giveBirth();
+    if(countNeighbours(lifeMatrix, newRocketPos, mode) > 0  && rocket.isAlive()){
+        lifeMatrix[newMapRocketPos.x][newMapRocketPos.y].giveBirth();
         rocket.kill();
     }
 
-    lifeMatrix = tempLifeMatrix;        //update lifeMatrix with the new matrix, returned from the gameOfLifeEngine() method
-    
 }
 
 //it draws the player, the rocket and the game's grid (with the enemies)
 void Environment::draw(){
     
+    player.draw();
+    rocket.draw();
+    
     for(int x=0; x<lifeMatrix.size(); x++){
         for(int y=0; y<lifeMatrix[0].size(); y++){
-            
-            player.draw();
-            rocket.draw();
             lifeMatrix[x][y].draw();
-            
         }
     }
     
@@ -123,37 +120,36 @@ void Environment::draw(){
      - Each alive cell with two or three neighbors survives.
      - Each dead cell with three neighbors becomes populated.
  
- The matrix is passed by reference, so it is directly modified by this method.
- But is important to notice that the matrix used in the if conditions is different from the one that is modified, because the cells in the matrix are changed wrt the cells in the neighborhood.
- 
+  The method uses a copy of the original lifeMatrix, because if we change directly values in the orginal matrix, the algorithm doesn't work as expected.
 */
-void Environment::gameOfLifeEngine(vector<vector<Cell>> &matrix){
+void Environment::gameOfLifeEngine(){
+    vector<vector<Cell>> matrix = lifeMatrix;
     
     for(int x=0; x<matrix.size(); x++){
         for(int y=0; y<matrix[0].size(); y++){
-            int currentNeighbors = countNeighbours(ofPoint(x*cellSize*2, y*cellSize*2));
+            int currentNeighbors = countNeighbours(matrix, ofPoint(x*cellSize*2, y*cellSize*2));
             
-            if(lifeMatrix[x][y].isAlive() && currentNeighbors <= 1){
-                matrix[x][y].kill();
+            if(matrix[x][y].isAlive() && currentNeighbors <= 1){
+                lifeMatrix[x][y].kill();
             }
-            else if(lifeMatrix[x][y].isAlive() && currentNeighbors >= 4){
-                matrix[x][y].kill();
+            else if(matrix[x][y].isAlive() && currentNeighbors >= 4){
+                lifeMatrix[x][y].kill();
             }
-            else if(lifeMatrix[x][y].isAlive() && (currentNeighbors == 2 || currentNeighbors == 3)){
-                matrix[x][y].giveBirth();   //it is altready alive...
+            else if(matrix[x][y].isAlive() && (currentNeighbors == 2 || currentNeighbors == 3)){
+                lifeMatrix[x][y].giveBirth();   //it is altready alive...
             }
-            else if(!lifeMatrix[x][y].isAlive() && currentNeighbors == 3){
-                matrix[x][y].giveBirth();
+            else if(!matrix[x][y].isAlive() && currentNeighbors == 3){
+                lifeMatrix[x][y].giveBirth();
             }
         }
     }
 }
 
 //if the player's position fits with an enemy's position, it returns true, otherwise false
-bool Environment::playerCollision(vector<vector<Cell>> &matrix, ofPoint cell){
+bool Environment::playerCollision(ofPoint cell){
     ofPoint currentPos = cell/(cellSize*2);                   //map the player pos to the matrix index
     
-    if(matrix[currentPos.x][currentPos.y].isAlive()) return true;
+    if(lifeMatrix[currentPos.x][currentPos.y].isAlive()) return true;
     return false;
 }
 
@@ -170,7 +166,7 @@ bool Environment::wallsCollision(ofPoint cell){
  It counts the neighbors of a given grid position.
  If mode is setted to x or y, only the neighbors in the x or y direction is taken in consideration.
 */
-int Environment::countNeighbours(ofPoint _pos, string _mode){
+int Environment::countNeighbours(vector<vector<Cell>> &matrix, ofPoint _pos, string _mode){
     
     int count = 0;
     ofPoint currentPos = _pos/(cellSize*2);     //map the pos to matrix's indexes
@@ -208,7 +204,7 @@ int Environment::countNeighbours(ofPoint _pos, string _mode){
             if(neighborPos.y >= gridSize) neighborPos.y = 0;
             
             //if this cell is alive (is an enemy), increments the count var
-            if(lifeMatrix[int(neighborPos.x)][int(neighborPos.y)].isAlive()) count++;
+            if(matrix[int(neighborPos.x)][int(neighborPos.y)].isAlive()) count++;
             
         }
     }
@@ -239,6 +235,7 @@ void Environment::control(string control){
     
 }
 
+/*TODO: I could pass it as a pointer...*/
 //a boolean's matrix is used in the Soundtrack class. Boolean represent the cell's state: alive/dead.
 vector<vector<bool>> Environment::getBoolLifeMatrix(){
     vector<vector<bool>> boolMatrix;

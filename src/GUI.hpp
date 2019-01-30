@@ -64,4 +64,5 @@ class GUI{
         void draw();
         void setMessage(string _message);
         void setLevel(string _level);
+        void windowResized(ofResizeEventArgs & resize);
 };
