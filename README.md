@@ -14,4 +14,4 @@ The rules of the bacterial cells are very simple:
   
   The Game is written in C++ (openFrameworks).
 
-![Alt Text](https://media.giphy.com/media/mPIB3dIbY1MUMI3mXX/giphy.gif)
+![Alt Text](https://imgur.com/4XxmhGK)
